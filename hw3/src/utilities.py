@@ -9,11 +9,6 @@ from pathlib import Path
 import math
 
 
-RANDOM_SEED = 42
-DATA_PATH = "./data"
-BOS_TOKEN = '<s>'
-EOS_TOKEN = '</s>'
-
 if torch.cuda.is_available():
     from torch.cuda import FloatTensor, LongTensor
     DEVICE = torch.device('cuda')

@@ -1,8 +1,8 @@
 stages:
   downland:
-    cmd: source downland_news.txt
+    cmd: source download_news.txt
     deps:
-    - downland_news.txt
+    - download_news.txt
     outs:
     - news.csv
   prepare_data:

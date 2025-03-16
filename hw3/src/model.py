@@ -3,7 +3,7 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utilities import RANDOM_SEED
+from params import RANDOM_SEED
 from encoder import Encoder
 from decoder import Decoder
 

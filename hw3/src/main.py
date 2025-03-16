@@ -4,7 +4,8 @@ import pandas as pd
 from tqdm.auto import tqdm
 from torchtext.legacy.data import BucketIterator, Field
 
-from utilities import DEVICE, load_dataset, load_word_field, DATA_PATH, BOS_TOKEN, EOS_TOKEN
+from utilities import DEVICE, load_dataset, load_word_field
+from params import DATA_PATH
 from optimizer import NoamOpt
 from train import fit
 

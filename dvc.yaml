@@ -1,0 +1,14 @@
+stages:
+  downland:
+    cmd: source downland_news.txt
+    deps:
+    - downland_news.txt
+    outs:
+    - news.csv
+  prepare_data:
+    cmd: python3 prepare_data.py
+    deps:
+    - prepare_data.py
+    outs:
+    - data/train
+    - data/test

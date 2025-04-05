@@ -1,8 +1,10 @@
 from tqdm.auto import tqdm
 import torch
 import math
+import wandb
 
 from utilities import convert_batch
+from params import config
 
 
 def do_epoch(model, criterion, data_iter, optimizer=None, name=None):
@@ -35,6 +37,7 @@ def do_epoch(model, criterion, data_iter, optimizer=None, name=None):
                 progress_bar.update()
                 progress_bar.set_description('{:>5s} Loss = {:.5f}, PPX = {:.2f}'.format(name, loss.item(), 
                                                                                          math.exp(loss.item())))
+                break
                 
             progress_bar.set_description('{:>5s} Loss = {:.5f}, PPX = {:.2f}'.format(
                 name, epoch_loss / batches_count, math.exp(epoch_loss / batches_count))
@@ -45,10 +48,20 @@ def do_epoch(model, criterion, data_iter, optimizer=None, name=None):
 
 
 def fit(model, criterion, optimizer, train_iter, epochs_count=30, val_iter=None):
+    wandb.init(config=config, project="hw3", name="baseline")
+
     best_val_loss = None
     for epoch in range(epochs_count):
         name_prefix = '[{} / {}] '.format(epoch + 1, epochs_count)
         train_loss = do_epoch(model, criterion, train_iter, optimizer, name_prefix + 'Train:')
+
+        metrics = {'train_loss': train_loss}
         
         if not val_iter is None:
             val_loss = do_epoch(model, criterion, val_iter, None, name_prefix + '  Val:')
+            metrics['val_loss'] = val_loss
+
+        wandb.log(metrics, step=epoch)
+
+    with open("run_id.txt", "w+") as f:
+        print(wandb.run.id, file=f)

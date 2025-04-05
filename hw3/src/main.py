@@ -2,10 +2,10 @@ from model import EncoderDecoder
 import torch.nn as nn
 import pandas as pd
 from tqdm.auto import tqdm
-from torchtext.legacy.data import BucketIterator, Field
+from torchtext.data import BucketIterator
 
 from utilities import DEVICE, load_dataset, load_word_field
-from params import DATA_PATH
+from params import DATA_PATH, config
 from optimizer import NoamOpt
 from train import fit
 
@@ -23,11 +23,11 @@ def main():
     model = EncoderDecoder(source_vocab_size=len(word_field.vocab), target_vocab_size=len(word_field.vocab)).to(DEVICE)
 
     pad_idx = word_field.vocab.stoi['<pad>']
-    criterion = nn.CrossEntropyLoss(ignore_index=pad_idx).to(DEVICE)
+    criterion = nn.CrossEntropyLoss(ignore_index=pad_idx, label_smoothing=config['label_smoothing']).to(DEVICE)
 
     optimizer = NoamOpt(model.d_model, model)
 
-    fit(model, criterion, optimizer, train_iter, epochs_count=1, val_iter=test_iter)
+    fit(model, criterion, optimizer, train_iter, epochs_count=config['epochs'], val_iter=test_iter)
     
     
 if __name__ == '__main__':

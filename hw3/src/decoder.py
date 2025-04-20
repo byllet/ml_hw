@@ -25,13 +25,10 @@ class DecoderLayer(nn.Module):
     
     
 class Decoder(nn.Module):
-    def __init__(self, vocab_size, d_model, d_ff, blocks_count, heads_count, dropout_rate):
+    def __init__(self, vocab_size, d_model, d_ff, blocks_count, heads_count, dropout_rate, embeddings):
         super().__init__()
         
-        self._emb = nn.Sequential(
-            nn.Embedding(vocab_size, d_model),
-            PositionalEncoding(d_model, dropout_rate)
-        )
+        self._emb = embeddings
         
         block = lambda: DecoderLayer(
             size=d_model, 

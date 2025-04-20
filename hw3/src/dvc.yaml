@@ -13,3 +13,9 @@ stages:
     outs:
     - data/train
     - data/test
+  train:
+    cmd: python3 main.py
+    deps:
+    - main.py
+    outs:
+    - models/model_trained.pt

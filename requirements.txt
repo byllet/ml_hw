@@ -1,0 +1,11 @@
+# python==3.12.3
+torchtext==0.6.0
+portalocker==2.8.2 # ?
+torch==2.6.0
+numpy==2.1.1
+nltk
+sacremoses==0.0.5
+matplotlib==3.10.0
+pandas==2.2.3
+dill==0.3.9 # ?
+dvc==2.10.0 # ?

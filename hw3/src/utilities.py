@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchtext.legacy.data import Dataset
+from torchtext.data import Dataset # тут я потрогал!!!
 
 import dill
 from pathlib import Path

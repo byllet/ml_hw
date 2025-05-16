@@ -1,10 +1,11 @@
 stages:
   downland:
-    cmd: source download_news.txt
+    cmd: source downlanding.txt
     deps:
-    - download_news.txt
+    - downlanding.txt
     outs:
     - news.csv
+    - navec_hudlit_v1_12B_500K_300d_100q.tar
   prepare_data:
     cmd: python3 prepare_data.py
     deps:
@@ -12,3 +13,9 @@ stages:
     outs:
     - data/train
     - data/test
+  train:
+    cmd: python3 main.py
+    deps:
+    - main.py
+    outs:
+    - models/model_trained.pt

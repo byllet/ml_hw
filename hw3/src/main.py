@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import pandas as pd
 from tqdm.auto import tqdm
-from torchtext.legacy.data import BucketIterator
+from torchtext.data import BucketIterator
 import wandb
 import time
 

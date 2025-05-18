@@ -4,6 +4,7 @@ from tqdm.auto import tqdm
 
 from utilities import save_dataset, save_word_field
 from params import DATA_PATH, BOS_TOKEN, EOS_TOKEN
+import json
 
 
 def main():
@@ -27,7 +28,16 @@ def main():
 
     word_field.build_vocab(train_dataset, min_freq=7)
     print('Vocab size =', len(word_field.vocab))
-    
+    data_stats = {
+    'train_size': len(train_dataset),
+    'test_size': len(test_dataset),
+    'vocab_size': len(word_field.vocab)
+    }
+
+    with open('src/dataset_stats.json', 'w') as f:
+        json.dump(data_stats, f, indent=4)
+
+
     save_dataset(train_dataset, DATA_PATH + "/train/") 
     save_dataset(test_dataset, DATA_PATH + "/test/") 
     

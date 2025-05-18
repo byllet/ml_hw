@@ -1,25 +1,21 @@
-# Задание 2. Оценка моделей с помощью ROUGE-метрики
 from model import EncoderDecoder
-from utilities import convert_batch, make_mask, load_dataset, load_word_field
-from summarization import get_words_from_tokens # TODO: Fix it!!
+from utilities import convert_batch, make_mask, load_dataset, load_word_field, DEVICE
+from summarization import get_words_from_tokens
 from params import BOS_TOKEN, EOS_TOKEN
 from torchtext.data import BucketIterator
 import torch
+import json
+import evaluate
 
 
-PAD_IDX = 1  
-
-def generate_sequence(model, word_field, source_input, max_len):
-    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+def generate_sequence(model, word_field, source_input, target_input, source_mask, target_mask, max_len):
     model.eval()
     with torch.no_grad():
-        encoder_output = model.encoder(source_input, source_mask)
         bos_idx = word_field.vocab.stoi[BOS_TOKEN]
         eos_idx = word_field.vocab.stoi[EOS_TOKEN]
-        target_input = torch.tensor([[bos_idx]])
-        target_input.to(DEVICE)
-        for i in range(max_len):
-            source_mask, target_mask = make_mask(source_input, target_input, pad_idx=PAD_IDX)
+        encoder_output = model.encoder(source_input, source_mask)
+        for j in range(max_len):
+            source_mask, target_mask = make_mask(source_input, target_input, pad_idx=1)
             decoder_output = model.decoder(target_input, encoder_output, source_mask, target_mask)            
             next_token_scores = decoder_output[:, -1, :]              
             next_token = torch.argmax(next_token_scores, dim=-1).unsqueeze(1) 
@@ -35,61 +31,72 @@ def generate_sequence(model, word_field, source_input, max_len):
         generated_text = ' '.join(get_words_from_tokens(word_field, generated_tokens)) 
         return generated_text
 
-def ROUGE_evaluation(source_vocab_size, target_vocab_size, path_to_model, word_field, iter):
-    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = EncoderDecoder(source_vocab_size, target_vocab_size, d_model=300, heads_count=15) # тут что-то странное
+def ROUGE_evaluation(source_vocab_size, target_vocab_size, path_to_model, word_field, iter, with_embs):
+    if (with_embs):
+        model = EncoderDecoder(source_vocab_size, target_vocab_size, True)
+    else:
+        model = EncoderDecoder(source_vocab_size, target_vocab_size, False)
     model.load_state_dict(torch.load(path_to_model, map_location=DEVICE))
+    model = model.to(DEVICE)
     model.eval()
     predictions, references = [], []
     with torch.no_grad():
         for batch in iter:
-            source_input, input_for_reference, source_mask, target_mask = convert_batch(batch) 
+            source_input, target_input, source_mask, target_mask = convert_batch(batch)
             source_input = source_input.to(DEVICE)
-            
-            for i in range(input_for_reference.shape[0]): 
-                ref_text = ' '.join(get_words_from_tokens(word_field, input_for_reference[i].cpu()))  
+            source_mask = source_mask.to(DEVICE) 
+            for i in range(target_input.shape[0]):
+                ref_text = ' '.join(get_words_from_tokens(word_field, target_input[i]))  
                 references.append(ref_text)
-
-            prediction_tokens = generate_sequence(model, word_field, source_input, input_for_reference.shape[1] // 2)
+            prediction_tokens = generate_sequence(model, word_field, source_input, target_input, source_mask, target_mask, target_input.shape[1] // 2)
             predictions.append(prediction_tokens)
     
     rouge = evaluate.load('rouge')  
     results = rouge.compute(predictions=predictions, references=references)
     print(results)
 
+    with open('hw3/src/evaluation_out/rouge_results_with_embs.json', 'w') as f:
+        json.dump(results, f, indent=2)
+
 def main():
-    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-    
-    test_dataset = load_dataset("/home/chivoro/Desktop/ml_hw/hw3/data/test") # !!!
-    train_dataset = load_dataset("/home/chivoro/Desktop/ml_hw/hw3/data/train") # !!!
-    
+    test_dataset = load_dataset("./data/test")
+    train_dataset = load_dataset("./data/train") 
     test_iter = BucketIterator(
         test_dataset, 
-        batch_size=32, 
-        device=DEVICE, 
-        sort=False,          # Добавлено
-        sort_within_batch=False  # Добавлено
+        batch_size=1, 
+        device=DEVICE
     )
     
     train_iter = BucketIterator(
         train_dataset, 
-        batch_size=32, 
-        device=DEVICE, 
-        sort=False,          # Добавлено
-        sort_within_batch=False  # Добавлено
+        batch_size=1, 
+        device=DEVICE
     )
-    
-    word_field = load_word_field("/home/chivoro/Desktop/ml_hw/hw3/data/") # !!!
-    vocab_size = 55784 # !!
+    with open('dataset_stats.json', 'r') as f:
+        data_stats = json.load(f)
+
+    word_field = load_word_field("./data") 
+    # vocab_size =  data_stats["vocab_size"]
+    vocab_size = 55784 # осталось это, потому что модель так обучена
      
-    ROUGE_evaluation(
-        source_vocab_size=vocab_size,  # Исправлен порядок параметров
+    ROUGE_evaluation( # это модель с эмбеддингами
+        source_vocab_size=vocab_size,
         target_vocab_size=vocab_size,
-        path_to_model="/home/chivoro/Desktop/ml_hw/hw3/src/model_epoch.pt",
+        path_to_model="./models/model_with_embs.pt",
         word_field=word_field,
-        iter=test_iter
+        iter=test_iter,
+        with_embs = True
     )
 
+
+    # ROUGE_evaluation( # это модель без эмбеддингов
+    #     source_vocab_size=vocab_size,
+    #     target_vocab_size=vocab_size,
+    #     path_to_model="./models/model_trained.pt",
+    #     word_field=word_field,
+    #     iter=test_iter,
+    #     with_embs = False
+    # )
 
 if __name__ == '__main__':
     main()

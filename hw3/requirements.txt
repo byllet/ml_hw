@@ -1,6 +1,5 @@
-# python==3.12.3
 torchtext==0.6.0
-portalocker==2.8.2 # ?
+portalocker==2.8.2
 torch==2.7.0+cu118
 seaborn==0.13.2
 tqdm==4.67.1
@@ -13,5 +12,5 @@ matplotlib==3.10.3
 navec==0.10.0
 numpy==2.2.6
 slovnet==0.6.0
-dill==0.3.9 # ?
-dvc==2.10.0 # ?
+dill==0.3.9
+dvc==2.10.0 

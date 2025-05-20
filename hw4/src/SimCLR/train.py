@@ -156,17 +156,13 @@ class ClassifierCLRTrainer:
             loss_valid = self.valid_step()
             valid_losses.append(loss_valid)
 
-            # self.save_checkpoint(loss_valid, best_w_path)
-
-        # self.save_model(last_w_path)
         torch.cuda.empty_cache()
 
         return train_losses, valid_losses
 
 def main():
-    train_dataset, valid_dataset, test_dataset = get_datasets()
-    print("got")
-
+    path = "images_background"
+    train_dataset, valid_dataset = get_datasets(path)
 
     with open('hw4/src/SimCLR/hyp_params.yaml', 'r') as f:
         hyp = yaml.load(f, Loader=yaml.SafeLoader)
@@ -187,23 +183,35 @@ def main():
                                     pin_memory=True,
                                     drop_last=True
                               )
-
-    # test_loader = DataLoader(test_dataset,
-    #                                 batch_size=hyp['batch_size'],
-    #                                 shuffle=True,
-    #                                 num_workers=hyp['n_workers'],
-    #                                 pin_memory=True,
-    #                                 drop_last=True
-    #                           )
     
 
     trainer = BaseTrainProcess(hyp, train_loader, valid_loader)
     train_losses, valid_losses = trainer.run()
+
+
+    path = "images_evaluation"
+    train_dataset, valid_dataset = get_datasets(path)
+
+    train_loader = DataLoader(train_dataset,
+                                    batch_size=hyp['batch_size'],
+                                    shuffle=True,
+                                    num_workers=hyp['n_workers'],
+                                    pin_memory=True,
+                                    drop_last=True
+                                )
+
+    valid_loader = DataLoader(valid_dataset,
+                                    batch_size=hyp['batch_size'],
+                                    shuffle=True,
+                                    num_workers=hyp['n_workers'],
+                                    pin_memory=True,
+                                    drop_last=True
+                                )
     
     classifier = ClassifierCLR(trainer.model.encoder, trainer.model.emb_size)
-
     classifier_trainer = ClassifierCLRTrainer(classifier, hyp, train_loader, valid_loader)
-    print(classifier_trainer.run())
+    train_losses, valid_losses = classifier_trainer.run()
+  
 
 if __name__ == "__main__":
     main()

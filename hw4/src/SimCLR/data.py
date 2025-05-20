@@ -16,10 +16,6 @@ from sklearn.model_selection import train_test_split
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
-import os
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-# from prepare_data import get_test_train_data, read_images
 from get_images import read_images
 
 
@@ -42,16 +38,15 @@ class CLDataset(Dataset):
 
     def __getitem__(self, item):
         image = self.x_data[item]
-        image = (image * 255).astype(np.uint8)
+        # image = (image * 255)
         label = self.y_data[item]
 
         # TODO: pass your code
-        x1 = self.transform_augment(image=image)['image']
-        x2 = self.transform_augment(image=image)['image']
+        x1 = self.transform_augment(image=image)['image'].float()
+        x2 = self.transform_augment(image=image)['image'].float()
 
-        image = torch.tensor(image).permute(2, 0, 1)
+        image = torch.tensor(image, dtype=torch.float32).permute(2, 0, 1)
         label = torch.tensor(label, dtype=torch.long)
-
         return x1, x2, label, image
     
 
@@ -82,37 +77,27 @@ def load_datasets(X_train, y_train, X_val, y_val, train_transform, valid_transfo
 
 
 def get_datasets(path):
-    # X_train, y_train = read_images('/../../images_background')
     X_train, y_train = read_images(path)
-    # X_test, y_test = read_images('../images_evaluation')
 
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
-
-    MEAN = np.mean(X_train, axis=(0, 1, 2), keepdims=True).squeeze()
-    STD = np.std(X_train, axis=(0, 1, 2), keepdims=True).squeeze()
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.35, random_state=42, shuffle=True)
 
     train_transform = A.Compose([
         A.OneOf([
-            A.ColorJitter(),
-            A.ToGray(),
-
-        ]),
-        A.HorizontalFlip(),
-        A.Normalize(mean=MEAN, std=STD),
+            A.RandomBrightnessContrast(p=0.5),
+            A.GaussNoise(var_limit=(10.0, 50.0), p=0.5),
+            A.ISONoise(p=0.3),
+        ], p=0.5),
         ToTensorV2()
     ])
 
     valid_transform = A.Compose([
-        A.Normalize(mean=MEAN, std=STD),
         ToTensorV2()
     ])
 
     train_dataset, valid_dataset = load_datasets(X_train, y_train, X_val, y_val, train_transform, valid_transform, crop_coef=1.4)
-    # train_dataset, test_dataset = load_datasets(X_train, y_train, X_test, y_test, train_transform, valid_transform, crop_coef=1.4)
-    test_dataset = []
 
-    return train_dataset, valid_dataset, test_dataset
+    return train_dataset, valid_dataset
 
 
 if __name__ == "__main__":
-    get_datasets()
+    pass

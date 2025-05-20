@@ -49,9 +49,3 @@ def read_images(base_directory):
             datay = np.concatenate([datay, result[1]])
     
     return datax, datay
-
-
-def get_test_train_data(train_path, test_path):
-    trainx, trainy = read_images(train_path)
-    testx, testy = read_images(test_path)
-    return trainx, trainy, testx, testy

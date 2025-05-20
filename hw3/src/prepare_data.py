@@ -11,7 +11,7 @@ def main():
     word_field = Field(tokenize='moses', init_token=BOS_TOKEN, eos_token=EOS_TOKEN, lower=True)
     fields = [('source', word_field), ('target', word_field)]
     
-    data = pd.read_csv('/home/chivoro/Desktop/ml_hw/hw3/src/news.csv', delimiter=',')
+    data = pd.read_csv('hw3/src/news.csv', delimiter=',')
 
     examples = []
     for _, row in tqdm(data.iterrows(), total=len(data)):

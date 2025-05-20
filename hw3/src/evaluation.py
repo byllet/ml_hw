@@ -76,10 +76,9 @@ def main():
         data_stats = json.load(f)
 
     word_field = load_word_field("./data") 
-    # vocab_size =  data_stats["vocab_size"]
-    vocab_size = 55784 # осталось это, потому что модель так обучена
+    vocab_size =  data_stats["vocab_size"]
      
-    ROUGE_evaluation( # это модель с эмбеддингами
+    ROUGE_evaluation(
         source_vocab_size=vocab_size,
         target_vocab_size=vocab_size,
         path_to_model="./models/model_with_embs.pt",
@@ -87,16 +86,6 @@ def main():
         iter=test_iter,
         with_embs = True
     )
-
-
-    # ROUGE_evaluation( # это модель без эмбеддингов
-    #     source_vocab_size=vocab_size,
-    #     target_vocab_size=vocab_size,
-    #     path_to_model="./models/model_trained.pt",
-    #     word_field=word_field,
-    #     iter=test_iter,
-    #     with_embs = False
-    # )
 
 if __name__ == '__main__':
     main()

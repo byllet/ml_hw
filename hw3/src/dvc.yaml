@@ -1,0 +1,21 @@
+stages:
+  download:
+    cmd: source downloading.txt
+    deps:
+    - downloading.txt
+    outs:
+    - news.csv
+    - navec_hudlit_v1_12B_500K_300d_100q.tar
+  prepare_data:
+    cmd: python3 prepare_data.py
+    deps:
+    - prepare_data.py
+    outs:
+    - data/train
+    - data/test
+  train:
+    cmd: python3 main.py
+    deps:
+    - main.py
+    outs:
+    - models/model_trained.pt

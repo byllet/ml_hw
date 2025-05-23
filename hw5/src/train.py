@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score
 
 from model import SiameseNetwork
 from params import DEVICE, hyp
+from data import get_train_test_dataloader
 
 import wandb
 
@@ -132,8 +133,7 @@ class Trainer:
     
 
 def main():
-    train_dataloader = []
-    valid_dataloader = []
+    train_dataloader, valid_dataloader = get_train_test_dataloader()
 
     model = SiameseNetwork().to(DEVICE)
     criterion = nn.BCELoss().to(DEVICE)

@@ -18,5 +18,5 @@
  - https://disk.yandex.ru/d/gz3j6fXfGkb-bQ
 
 Отчеты:
-- https://wandb.ai/ch2/hw3/reports/Run-without-embeddings--VmlldzoxMjg2MzczMg
-- https://wandb.ai/ch2/hw3/reports/Run-with-embeddings--VmlldzoxMjg2MzcxNQ
+- https://api.wandb.ai/links/ch2/vz2sq5d2
+- https://api.wandb.ai/links/ch2/cde33n4m

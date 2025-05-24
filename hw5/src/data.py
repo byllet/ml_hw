@@ -35,7 +35,7 @@ class LFWDataset(Dataset):
 
 
 def get_data(data_path):
-    lfw_dataset = fetch_lfw_pairs(data_home=data_path, color=True, download_if_missing=True)
+    lfw_dataset = fetch_lfw_pairs(data_home=data_path, color=True, resize=0.9, slice_=(slice(1, 249), slice(1, 249)), download_if_missing=True)
     X_train, X_test, y_train, y_test = train_test_split(
         lfw_dataset.pairs, lfw_dataset.target, test_size=0.25, stratify=lfw_dataset.target, random_state=42)
     

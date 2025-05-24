@@ -7,3 +7,4 @@ hyp = {
 }
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+DATA = './hw5/data/'

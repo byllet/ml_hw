@@ -11,7 +11,7 @@ import os
 import json
 
 from model import SiameseNetwork
-from params import DEVICE
+from params import DEVICE, DATA
 
 from data import get_data, LFWDataset
 
@@ -59,10 +59,10 @@ def predict_on_n_pairs(model, output_dir, device, test_loader,  MEAN, STD, n = 1
 
 def main(model_path, out_dir):
     model = SiameseNetwork()
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load(model_path, map_location=torch.device(DEVICE)))
 
 
-    X_train, X_test, y_train, y_test = get_data('.')
+    X_train, X_test, y_train, y_test = get_data(DATA)
     MEAN = np.mean(X_train, axis=(0, 1, 2, 3), keepdims=True).squeeze()
     STD = np.std(X_train, axis=(0, 1, 2, 3), keepdims=True).squeeze()
 
@@ -73,7 +73,7 @@ def main(model_path, out_dir):
     ])
 
     valid_dataset = LFWDataset(X_test, y_test, transform_augment=transform)
-    test_loader = DataLoader(valid_dataset, batch_size=10)
+    test_loader = DataLoader(valid_dataset, batch_size=10, shuffle=True)
 
     predict_on_n_pairs(model, out_dir, DEVICE, test_loader, MEAN, STD,)
 
@@ -83,7 +83,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_path",
         type=str,
-        default="./model.pt",
     )
     parser.add_argument(
         "--out_path",

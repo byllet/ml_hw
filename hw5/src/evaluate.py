@@ -25,6 +25,8 @@ def predict_on_n_pairs(model, output_dir, device, test_loader,  MEAN, STD, n = 1
     mean = torch.tensor(MEAN, dtype=torch.float32).view(3, 1, 1)
     std = torch.tensor(STD, dtype=torch.float32).view(3, 1, 1)
     accuracy = 0
+    TP = 0
+    TN = 0
 
     with torch.no_grad():
         for x1, x2, labels in test_loader:
@@ -40,6 +42,8 @@ def predict_on_n_pairs(model, output_dir, device, test_loader,  MEAN, STD, n = 1
                 match = sim_score > 0.5
 
                 accuracy += match == labels[i].item()
+                TP += (match == labels[i].item()) and match
+                TN += (match == labels[i].item()) and not match
 
                 pair_dir = os.path.join(output_dir, f'pair_{count}')
                 os.makedirs(pair_dir, exist_ok=True)
@@ -54,7 +58,12 @@ def predict_on_n_pairs(model, output_dir, device, test_loader,  MEAN, STD, n = 1
 
 
     with open(os.path.join(output_dir, 'accuracy.json'), 'w') as f:
-        json.dump({"accuracy": accuracy / n}, f)
+        json.dump({"accuracy": accuracy / n, 
+                   "TP": round(TP / (sum([i.item() for i in labels]) + 1e-6), 2), 
+                   "TN": round(TN / (sum([(1 - i.item()) for i in labels]) + 1e-6), 2),
+                   "total similar": int(sum([i.item() for i in labels])),
+                   "total different": int(sum([1 - i.item() for i in labels]))}, f)
+        
 
 
 def main(model_path, out_dir):

@@ -17,7 +17,7 @@ def get_test_transform(STD, MEAN):
 
 def get_train_transform(STD, MEAN):
     transform = A.Compose([
-        #A.Resize(height=160, width=160),
+        A.Resize(height=160, width=160),
         A.OneOf([
             A.ColorJitter(),
             A.ToGray(),

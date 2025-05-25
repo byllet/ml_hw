@@ -1,11 +1,10 @@
 import torch
 from sklearn.datasets import fetch_lfw_pairs
 from sklearn.model_selection import train_test_split
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
 import numpy as np
 
 from torch.utils.data import Dataset, DataLoader
+from utils import get_std_mean, get_test_transform, get_train_transform
 
 
 class LFWDataset(Dataset):
@@ -45,27 +44,10 @@ def get_data(data_path):
 def get_train_test_dataloader(data_path):
     X_train, X_test, y_train, y_test = get_data(data_path)
     
-    MEAN = np.mean(X_train, axis=(0, 1, 2, 3), keepdims=True).squeeze()
-    STD = np.std(X_train, axis=(0, 1, 2, 3), keepdims=True).squeeze()
-
-    train_transform = A.Compose([
-        A.Resize(height=160, width=160),
-        A.OneOf([
-            A.ColorJitter(),
-            A.ToGray(),
-
-        ]),
-        A.HorizontalFlip(),
-        A.Normalize(mean=MEAN, std=STD),
-        ToTensorV2()
-    ])
-
-    valid_transform = A.Compose([
-        A.Resize(height=160, width=160),
-        A.Normalize(mean=MEAN, std=STD),
-        ToTensorV2()
-    ])
-
+    STD, MEAN = get_std_mean(X_train)
+    
+    train_transform = get_train_transform(STD, MEAN)
+    valid_transform = get_test_transform(STD, MEAN)
     
     train_dataset = LFWDataset(X_train, y_train, transform_augment=train_transform)
     valid_dataset = LFWDataset(X_test, y_test, transform_augment=valid_transform)

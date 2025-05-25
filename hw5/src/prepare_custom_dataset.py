@@ -14,6 +14,7 @@ import os
 
 from evaluate import predict_on_n_pairs
 from data import get_data, LFWDataset
+from utils import get_test_transform, get_std_mean
 
 def rename_images(dir_path, transform=False): 
     if transform:
@@ -62,13 +63,9 @@ def main(model_path, out_dir, batch_size=15):
     model.load_state_dict(torch.load(model_path, map_location=torch.device(DEVICE)))
 
     X_train, _, _, _ = get_data(DATA)
-    MEAN = np.mean(X_train, axis=(0, 1, 2, 3), keepdims=True).squeeze()
-    STD = np.std(X_train, axis=(0, 1, 2, 3), keepdims=True).squeeze()
+    STD, MEAN = get_std_mean(X_train)
+    transform = get_test_transform(STD, MEAN)
 
-    transform = A.Compose([
-        A.Normalize(mean=MEAN, std=STD),
-        ToTensorV2()
-    ])
     X_test, y_test = create_custom_dateset(os.path.join(DATA, "custom_dataset"))
     valid_dataset = LFWDataset(X_test, y_test, transform_augment=transform)
     sampler = WeightedRandomSampler([5/batch_size if y == 1 else 10/batch_size for y in y_test], batch_size, replacement=False)

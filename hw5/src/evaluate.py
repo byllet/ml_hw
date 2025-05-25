@@ -14,6 +14,7 @@ from model import SiameseNetwork
 from params import DEVICE, DATA
 
 from data import get_data, LFWDataset
+from utils import get_std_mean, get_test_transform
 
 def predict_on_n_pairs(model, output_dir, device, test_loader,  MEAN, STD, n = 10):
     os.makedirs(output_dir, exist_ok=True)
@@ -72,14 +73,9 @@ def main(model_path, out_dir):
 
 
     X_train, X_test, y_train, y_test = get_data(DATA)
-    MEAN = np.mean(X_train, axis=(0, 1, 2, 3), keepdims=True).squeeze()
-    STD = np.std(X_train, axis=(0, 1, 2, 3), keepdims=True).squeeze()
-
-    transform = A.Compose([
-        A.Resize(height=160, width=160),
-        A.Normalize(mean=MEAN, std=STD),
-        ToTensorV2()
-    ])
+    STD, MEAN = get_std_mean(X_train)
+    
+    transform = get_test_transform(STD, MEAN)
 
     valid_dataset = LFWDataset(X_test, y_test, transform_augment=transform)
     test_loader = DataLoader(valid_dataset, batch_size=10, shuffle=True)

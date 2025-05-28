@@ -17,7 +17,7 @@ set_seed()
 
 class EncoderModule(nn.Module):
     def __init__(self, device, in_channels, out_channels=64, conv_kernel_size=3):
-        super().__init__()
+        super(EncoderModule, self).__init__()
         self.conv_layer = nn.Conv2d(in_channels=in_channels, 
                                     out_channels=out_channels,
                                     kernel_size=conv_kernel_size,
@@ -39,13 +39,13 @@ class EncoderModule(nn.Module):
 
 class Encoder(nn.Module):
     def __init__(self, device, x_dim, hid_dim, z_dim):
-        super().__init__()
-        self.modules = [EncoderModule(device, x_dim[0]) if i == 0 
+        super(Encoder, self).__init__()
+        self.module_list = nn.ModuleList([EncoderModule(device, x_dim[0]) if i == 0 
                                       else EncoderModule(device, in_channels=z_dim)
                                       for i in range(hid_dim)]
 
     def forward(self, x):
-        for module in self.modules:
+        for module in self.module_list:
             x = module(x)
         return x
     

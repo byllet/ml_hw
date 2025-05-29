@@ -35,12 +35,10 @@ def train(model, start):
             action = action.cuda()
 
         random_action = random.random() <= epsilon
-        if random_action:
-            print("Performed random action!")
+        
         action_index = [torch.randint(params.ACTION_NUM, torch.Size([]), dtype=torch.int)
                         if random_action
                         else torch.argmax(output)][0]
-
         if torch.cuda.is_available():
             action_index = action_index.cuda()
 
@@ -93,8 +91,8 @@ def train(model, start):
         iteration += 1
 
         if iteration % 25000 == 0 or iteration == params.ITER_NUM - 1:
-            torch.save(model, "pretrained_model/current_model_" + str(iteration) + ".pth")
+            torch.save(model.state_dict(), "pretrained_model/current_model_" + str(iteration) + ".pt")
 
-        print("iteration:", iteration, "elapsed time:", time.time() - start, "epsilon:", epsilon, "action:",
+        '''print("iteration:", iteration, "elapsed time:", time.time() - start, "epsilon:", epsilon, "action:",
               action_index.cpu().detach().numpy(), "reward:", reward.numpy()[0][0], "Q max:",
-              np.max(output.cpu().detach().numpy()))
+              np.max(output.cpu().detach().numpy()))'''

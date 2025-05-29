@@ -8,12 +8,13 @@ from game.wrapped_flappy_bird import GameState
 from utils import image_to_tensor, resize_and_bgr2gray
 from model import NeuralNetwork, init_weights
 from train import train
+import params
 
 
 def test(model):
     game_state = GameState()
 
-    action = torch.zeros([model.ACTION_NUM], dtype=torch.float32)
+    action = torch.zeros([params.ACTION_NUM], dtype=torch.float32)
     action[0] = 1
     image_data, reward, terminal = game_state.frame_step(action)
     image_data = resize_and_bgr2gray(image_data)
@@ -23,7 +24,7 @@ def test(model):
     while True:
         output = model(state)[0]
 
-        action = torch.zeros([model.ACTION_NUM], dtype=torch.float32)
+        action = torch.zeros([params.ACTION_NUM], dtype=torch.float32)
         if torch.cuda.is_available():
             action = action.cuda()
 
@@ -44,10 +45,12 @@ def main(mode):
     cuda_is_available = torch.cuda.is_available()
 
     if mode == 'test':
-        model = torch.load(
-            'pretrained_model/current_model_2000000.pth',
+        model = NeuralNetwork()
+        model.load_state_dict(torch.load('pretrained_model/current_model_249.pt'))
+        '''model = torch.load(
+            'pretrained_model/current_model_9999.pth',
             map_location='cpu' if not cuda_is_available else None
-        ).eval()
+        ).eval()'''
 
         if cuda_is_available:
             model = model.cuda()

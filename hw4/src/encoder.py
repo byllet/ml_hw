@@ -42,7 +42,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
         self.module_list = nn.ModuleList([EncoderModule(device, x_dim[0]) if i == 0 
                                       else EncoderModule(device, in_channels=z_dim)
-                                      for i in range(hid_dim)]
+                                      for i in range(hid_dim)])
 
     def forward(self, x):
         for module in self.module_list:

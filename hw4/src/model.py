@@ -47,6 +47,7 @@ class ProtoNet(nn.Module):
         distances = torch.Tensor([[torch.dist(query_samples[i], prototypes[j]) for j in range(prototypes.size()[0])]
                                  for i in range(query_samples.size()[0])]) 
                                   
+        distances.requires_grad = True                          
         softmax = nn.Softmax(dim=1)
         probabilities = softmax(-distances)
 

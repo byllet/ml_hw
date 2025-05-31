@@ -5,10 +5,10 @@ import yaml
 import numpy as np
 from tqdm import tqdm
 
+import torchvision
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-# from torch.utils.tensorboard import SummaryWriter
 
 from simclr import  BaseTrainProcess, ProjectionHead
 from data import load_datasets, get_datasets
@@ -27,6 +27,11 @@ class ClassifierCLR(nn.Module):
         out = self.encoder(x)
         xp = self.projector(torch.squeeze(out))
         return xp
+
+    def make_requires_grad(self, requires_grad):
+        for p in self.encoder.parameters():
+            p.requires_grad = requires_grad
+
 
 class ClassifierCLRTrainer:
     def __init__(self, model, hyp, train_loader, valid_loader):
@@ -161,13 +166,12 @@ class ClassifierCLRTrainer:
         return train_losses, valid_losses
 
 def main():
-    path = "images_background"
-    train_dataset, valid_dataset = get_datasets(path)
-
+    datapath = "images_background"
     with open('hw4/src/SimCLR/hyp_params.yaml', 'r') as f:
         hyp = yaml.load(f, Loader=yaml.SafeLoader)
  
 
+    train_dataset, valid_dataset = get_datasets(datapath)
     train_loader = DataLoader(train_dataset,
                                     batch_size=hyp['batch_size'],
                                     shuffle=True,
@@ -188,30 +192,18 @@ def main():
     trainer = BaseTrainProcess(hyp, train_loader, valid_loader)
     train_losses, valid_losses = trainer.run()
 
-
-    path = "images_evaluation"
-    train_dataset, valid_dataset = get_datasets(path)
-
-    train_loader = DataLoader(train_dataset,
-                                    batch_size=hyp['batch_size'],
-                                    shuffle=True,
-                                    num_workers=hyp['n_workers'],
-                                    pin_memory=True,
-                                    drop_last=True
-                                )
-
-    valid_loader = DataLoader(valid_dataset,
-                                    batch_size=hyp['batch_size'],
-                                    shuffle=True,
-                                    num_workers=hyp['n_workers'],
-                                    pin_memory=True,
-                                    drop_last=True
-                                )
     
     classifier = ClassifierCLR(trainer.model.encoder, trainer.model.emb_size)
     classifier_trainer = ClassifierCLRTrainer(classifier, hyp, train_loader, valid_loader)
     train_losses, valid_losses = classifier_trainer.run()
-  
+
+    model = torchvision.models.resnet50(pretrained=True)
+    encoder = nn.Sequential(*tuple(model.children())[:-1])
+    classifier_without_clr = ClassifierCLR(encoder, trainer.model.emb_size)
+    classifier_without_clr.make_requires_grad(True)
+    classifier_trainer = ClassifierCLRTrainer(classifier_without_clr, hyp, train_loader, valid_loader)
+    train_losses_without, valid_losses_without = classifier_trainer.run()
+
 
 if __name__ == "__main__":
     main()

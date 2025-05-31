@@ -51,6 +51,7 @@ def train(model, optimizer, train_x, train_y, n_way, n_support, n_query, max_epo
         epoch_loss = running_loss / epoch_size
         epoch_acc = running_acc / epoch_size
 
+        progress_bar.set_description('Loss = {:.5f}, Acc = {:.2f}'.format(epoch_loss, epoch_acc))
         progress_bar.refresh()
         epoch += 1
         scheduler.step()

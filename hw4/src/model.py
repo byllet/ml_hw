@@ -6,7 +6,6 @@ import torch.nn as nn
 from encoder import Encoder
 from prepare_data import extract_sample, read_images
 
-
 class ProtoNet(nn.Module):
     def __init__(self, encoder):
         """
@@ -34,20 +33,21 @@ class ProtoNet(nn.Module):
 
         support_samples = sample_images[:, :n_support]
         query_samples = sample_images[:, n_support:]
+        
         support_samples = support_samples.reshape(n_way * n_support, *support_samples.size()[2:])
         query_samples = query_samples.reshape(n_way * n_query, *query_samples.size()[2:])
         true_classes = np.array([[i] * n_query for i in range(n_way)]).ravel()
 
-        support_samples = self.encoder(support_samples)
+        support_samples = self.encoder.forward(support_samples)
         support_samples = support_samples.reshape(n_way, n_support, *support_samples.size()[-3:])
-        query_samples = self.encoder(query_samples)
+        query_samples = torch.squeeze(self.encoder.forward(query_samples))
         
-        prototypes = support_samples.mean(1)
+        prototypes = torch.squeeze(support_samples.mean(1))
         
-        distances = torch.Tensor([[torch.dist(query_samples[i], prototypes[j]) for j in range(prototypes.size()[0])]
-                                 for i in range(query_samples.size()[0])]) 
-                                  
-        distances.requires_grad = True                          
+        sizes = (query_samples.size(0), prototypes.size(0), query_samples.size(1))
+        prototypes = prototypes.unsqueeze(0).expand(*sizes)
+        query_samples = query_samples.unsqueeze(1).expand(*sizes)
+        distances = torch.pow(prototypes - query_samples, 2).sum(2)
         softmax = nn.Softmax(dim=1)
         probabilities = softmax(-distances)
 
@@ -57,7 +57,6 @@ class ProtoNet(nn.Module):
         loss_val = -log_softmax(-distances).mean()
 
         acc_val = sum(y_hat == true_classes) / y_hat.size()[0]
-        print(sum(y_hat == true_classes))
 
         return loss_val, {
             'loss': loss_val.item(),

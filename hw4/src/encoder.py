@@ -18,22 +18,19 @@ set_seed()
 class EncoderModule(nn.Module):
     def __init__(self, device, in_channels, out_channels=64, conv_kernel_size=3):
         super(EncoderModule, self).__init__()
-        self.conv_layer = nn.Conv2d(in_channels=in_channels, 
-                                    out_channels=out_channels,
-                                    kernel_size=conv_kernel_size,
-                                    device=device,
-                                    padding=conv_kernel_size-2)
-        self.norm_layer = nn.BatchNorm2d(num_features=64,
-                                    device=device)
-        self.relu_layer = nn.ReLU()
-        self.max_pool_layer = nn.MaxPool2d((2, 2), ceil_mode=False)
+        self._layers = nn.Sequential(nn.Conv2d(in_channels=in_channels, 
+                                                out_channels=out_channels,
+                                                kernel_size=conv_kernel_size,
+                                                device=device,
+                                                padding=conv_kernel_size-2), 
+                                        nn.BatchNorm2d(num_features=64,
+                                                        device=device),
+                                        nn.ReLU(),
+                                        nn.MaxPool2d((2, 2), ceil_mode=False))
         
 
     def forward(self, x):
-        x = self.conv_layer(x)
-        x = self.norm_layer(x)
-        x = self.relu_layer(x)
-        x = self.max_pool_layer(x)
+        x = self._layers(x)
         return x
     
 

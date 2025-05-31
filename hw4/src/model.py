@@ -3,6 +3,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+import torch.nn.functional as F
+from torch.autograd import Variable
+
 from encoder import Encoder
 from prepare_data import extract_sample, read_images
 
@@ -39,7 +42,7 @@ class ProtoNet(nn.Module):
         true_classes = np.array([[i] * n_query for i in range(n_way)]).ravel()
 
         support_samples = self.encoder.forward(support_samples)
-        support_samples = support_samples.reshape(n_way, n_support, *support_samples.size()[-3:])
+        support_samples = support_samples.reshape(n_way, n_support, support_samples.size()[-1])
         query_samples = torch.squeeze(self.encoder.forward(query_samples))
         
         prototypes = torch.squeeze(support_samples.mean(1))
@@ -48,15 +51,13 @@ class ProtoNet(nn.Module):
         prototypes = prototypes.unsqueeze(0).expand(*sizes)
         query_samples = query_samples.unsqueeze(1).expand(*sizes)
         distances = torch.pow(prototypes - query_samples, 2).sum(2)
-        softmax = nn.Softmax(dim=1)
-        probabilities = softmax(-distances)
-
-        y_hat = torch.argmax(probabilities, 1)
-
-        log_softmax = nn.LogSoftmax(dim=1)
-        loss_val = -log_softmax(-distances).mean()
-
-        acc_val = sum(y_hat == true_classes) / y_hat.size()[0]
+        probabilities  = -distances
+        true_classes = torch.arange(0, n_way).view(n_way, 1, 1).expand(n_way, n_query, 1).long()
+        true_classes = Variable(true_classes, requires_grad=False)
+        log_softmax = F.log_softmax(probabilities, dim=1).view(n_way, n_query, -1)
+        loss_val = -log_softmax.gather(2, true_classes).squeeze().view(-1).mean()
+        _, y_hat = log_softmax.max(2)
+        acc_val = torch.eq(y_hat, true_classes.squeeze()).float().mean()
 
         return loss_val, {
             'loss': loss_val.item(),

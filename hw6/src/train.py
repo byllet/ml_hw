@@ -4,10 +4,12 @@ import torch.optim as optim
 import random
 import numpy as np
 import time
+import json
+from pathlib import Path
 
 from game.wrapped_flappy_bird import GameState
 import params
-from utils import image_to_tensor, resize_and_bgr2gray
+from utils import image_to_tensor, transform_image
 
 def train(model, start):
     optimizer = optim.Adam(model.parameters(), lr=1e-6)
@@ -18,7 +20,7 @@ def train(model, start):
     action = torch.zeros([params.ACTION_NUM], dtype=torch.float32)
     action[0] = 1
     image_data, reward, terminal = game_state.frame_step(action)
-    image_data = resize_and_bgr2gray(image_data)
+    image_data = transform_image(image_data)
     image_data = image_to_tensor(image_data)
     state = torch.cat((image_data, image_data, image_data, image_data)).unsqueeze(0)
 
@@ -45,7 +47,7 @@ def train(model, start):
         action[action_index] = 1
 
         image_data_1, reward, terminal = game_state.frame_step(action)
-        image_data_1 = resize_and_bgr2gray(image_data_1)
+        image_data_1 = transform_image(image_data_1)
         image_data_1 = image_to_tensor(image_data_1)
         state_1 = torch.cat((state.squeeze(0)[1:, :, :], image_data_1)).unsqueeze(0)
 

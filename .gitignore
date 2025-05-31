@@ -2,3 +2,5 @@
 *.pt
 *.pyc
 *.pkl
+*wandb*
+*.png

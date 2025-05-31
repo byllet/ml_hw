@@ -11,6 +11,6 @@
     - реализация модели
     - предобработка изображений
 
-Обученные модели тут: https://disk.360.yandex.ru/d/B1-CSAwNIyCwYQ
+Обученные модели тут: https://disk.360.yandex.ru/d/B1-CSAwNIyCwYQ  
 График обучения:
 ![](plot.png "")

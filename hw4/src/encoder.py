@@ -40,10 +40,11 @@ class Encoder(nn.Module):
         self.module_list = nn.ModuleList([EncoderModule(device, x_dim[0]) if i == 0 
                                       else EncoderModule(device, in_channels=z_dim)
                                       for i in range(hid_dim)])
-
+        self.flatten = nn.Flatten()
     def forward(self, x):
         for module in self.module_list:
             x = module(x)
-        return x
+        out = self.flatten(x)
+        return out
     
     

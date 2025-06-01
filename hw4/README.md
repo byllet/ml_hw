@@ -20,5 +20,3 @@
  Визуализация:
  ![classes](visualization/classes.png "")
  ![symbols](visualization/symbols.png "")
-
- 

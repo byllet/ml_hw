@@ -3,18 +3,22 @@ from params import DEVICE
 import torch
 from PIL import Image
 from torchvision import transforms
-import argparse
+import argparse 
+from utils import get_test_transform
+import numpy as np
 
 def main(model_path, path_to_img1, path_to_img2):
+    STD = [0.31974083, 0.31662673, 0.2981077 ]
+    MEAN = [0.10223421, 0.10223421, 0.10223421]
     model = SiameseNetwork()
-    transform = transforms.Compose([
-        transforms.Resize((160, 160)),  
-        transforms.ToTensor()])
     model.load_state_dict(torch.load(model_path, map_location=torch.device(DEVICE)))
-    img1 = Image.open(path_to_img1)
-    img1 = transform(img1).unsqueeze(0).to(DEVICE) 
-    img2 = Image.open(path_to_img2)
-    img2 = transform(img2).unsqueeze(0).to(DEVICE) 
+    transform = get_test_transform(STD, MEAN)
+    img1 = np.array(Image.open(path_to_img1))
+    transformed = transform(image=img1)
+    img1 = transformed["image"].unsqueeze(0).to(DEVICE)
+    img2 = np.array(Image.open(path_to_img2))
+    transformed = transform(image=img2)
+    img2 = transformed["image"].unsqueeze(0).to(DEVICE)
     model.eval()
     model.to(DEVICE)
     with torch.no_grad():

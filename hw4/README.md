@@ -20,3 +20,6 @@
  Визуализация:
  ![classes](visualization/classes.png "")
  ![symbols](visualization/symbols.png "")
+ 
+ Предсказания на тестовых данных:
+ ![result](result.png "")

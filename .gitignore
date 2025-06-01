@@ -1,0 +1,6 @@
+*.jpg
+*.pt
+*.pyc
+*.pkl
+*wandb*
+*.png

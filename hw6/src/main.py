@@ -1,10 +1,9 @@
 import os
 import sys
 import time
-
+import wandb
 import torch
-
-from game.wrapped_flappy_bird import GameState
+from game.wrapped_flappy_bird import GameState 
 from utils import image_to_tensor, transform_image
 from model import NeuralNetwork, init_weights
 from train import train
@@ -20,7 +19,7 @@ def test(model):
     image_data = transform_image(image_data)
     image_data = image_to_tensor(image_data)
     state = torch.cat((image_data, image_data, image_data, image_data)).unsqueeze(0)
-
+    wandb.init(project="hw6", name="test")
     while True:
         output = model(state)[0]
 
@@ -46,7 +45,7 @@ def main(mode):
 
     if mode == 'test':
         model = NeuralNetwork()
-        model.load_state_dict(torch.load('pretrained_model/current_model_249.pt'))
+        model.load_state_dict(torch.load('pretrained_model/current_model_2200000.pt'))
         '''model = torch.load(
             'pretrained_model/current_model_9999.pth',
             map_location='cpu' if not cuda_is_available else None
@@ -58,15 +57,20 @@ def main(mode):
         test(model)
 
     elif mode == 'train':
+        wandb.init(project="hw6", name="baseline")
         if not os.path.exists('pretrained_model/'):
             os.mkdir('pretrained_model/')
 
         model = NeuralNetwork()
+        
+        loading = True
+        if loading:
+            model.load_state_dict(torch.load('pretrained_model/current_model_2199999.pt'))
 
         if cuda_is_available:
             model = model.cuda()
-
-        model.apply(init_weights)
+        if not loading:
+            model.apply(init_weights)
         start = time.time()
 
         train(model, start)

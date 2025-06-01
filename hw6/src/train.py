@@ -5,6 +5,7 @@ import random
 import numpy as np
 import time
 import json
+import wandb
 from pathlib import Path
 
 from game.wrapped_flappy_bird import GameState
@@ -28,7 +29,8 @@ def train(model, start):
     iteration = 0
 
     epsilon_decrements = np.linspace(params.MAX_EPS, params.MIN_EPS, params.ITER_NUM)
-
+    logs = []
+    wandb.init(project="hw6", name="train")
     while iteration < params.ITER_NUM:
         output = model(state)[0]
 
@@ -85,15 +87,27 @@ def train(model, start):
         y_batch = y_batch.detach()
 
         loss = criterion(q_value, y_batch)
-
         loss.backward()
+        if iteration % 100 == 0:
+            wandb.log({
+                "loss": loss.item(),
+                "reward": reward.item(),
+                "Q_max": output.max().item(),
+        })        
         optimizer.step()
 
         state = state_1
         iteration += 1
-
-        if iteration % 25000 == 0 or iteration == params.ITER_NUM - 1:
-            torch.save(model.state_dict(), "pretrained_model/current_model_" + str(iteration) + ".pt")
+        wandb.log({"Q max": float(np.max(output.cpu().detach().numpy()))}, step=iteration)
+        if iteration % 10000 == 0 or iteration == params.ITER_NUM - 1:
+            torch.save(model.state_dict(), "pretrained_model/current_model_" + str(iteration + 2000000) + ".pt") # TODO: я тут кривыми ручками натрогал, поправить! 
+            state_dict = {"iteration": iteration, "elapsed time": time.time() - start, "epsilon": epsilon, 
+                          "reward": float(reward.numpy()[0][0]), "Q max": float(np.max(output.cpu().detach().numpy()))}
+            logs.append(state_dict)
+    log_file = Path("logs.json")
+    with open(log_file, "a") as f:
+        json.dump(logs, f)
+                
 
         '''print("iteration:", iteration, "elapsed time:", time.time() - start, "epsilon:", epsilon, "action:",
               action_index.cpu().detach().numpy(), "reward:", reward.numpy()[0][0], "Q max:",

@@ -140,6 +140,7 @@ class GameState:
         if self.playerRot <= self.playerRotThr:
             visibleRot = self.playerRot
         playerSurface = pygame.transform.rotate(IMAGES['player'][self.playerIndex], visibleRot)
+        showScore(self.score)
         SCREEN.blit(playerSurface, (self.playerx, self.playery))
 
         image_data = pygame.surfarray.array3d(pygame.display.get_surface())

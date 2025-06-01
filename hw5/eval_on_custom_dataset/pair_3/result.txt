@@ -1,0 +1,3 @@
+Similarity score: 0.6390
+Predicted match: Yes
+True label: 1

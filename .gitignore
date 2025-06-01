@@ -2,6 +2,5 @@
 *.pt
 *.pyc
 *.pkl
-images_background
-images_evaluation
-__*
+*wandb*
+*.png

@@ -39,42 +39,38 @@ def train(model, optimizer, train_x, train_y, n_way, n_support, n_query, max_epo
               sample = extract_sample(n_way, n_support, n_query, train_x, train_y)
               optimizer.zero_grad()
               loss, output = model.set_forward_loss(sample)
-              print(loss)
               running_loss += output['loss']
               running_acc += output['acc']
               loss.backward()
               optimizer.step()
-              print("Loss:", loss.item())
               progress_bar.update()
-              progress_bar.set_description('{:>5s} Loss = {:.5f}, Acc = {:.2f}'.format(output['loss'], output['acc']))
-
+              progress_bar.set_description('Loss = {:.5f}, Acc = {:.2f}'.format(output['loss'], output['acc']))
+              metrics = {"Loss": output['loss'], 'Accuracy': output['acc']}
+              wandb.log(metrics, step = episode)   
         
         epoch_loss = running_loss / epoch_size
         epoch_acc = running_acc / epoch_size
 
-        progress_bar.set_description('{:>5s} Loss = {:.5f}, Acc = {:.2f}'.format(epoch_loss, epoch_acc))
+        progress_bar.set_description('Loss = {:.5f}, Acc = {:.2f}'.format(epoch_loss, epoch_acc))
         progress_bar.refresh()
         epoch += 1
         scheduler.step()
         metrics = {'Loss': epoch_loss, 'Accuracy': epoch_acc}
         wandb.log(metrics, step=epoch)
+    torch.save(model.state_dict(), "trained_model.pt")
 
 if __name__ == "__main__":
     wandb.init(project="hw4", name="baseline")
-    device = "cpu" # TODO: Fix it! 
-    
+    device = "cuda"  
     trainx, trainy = read_images('images_background')
     testx, testy = read_images('images_evaluation')
-    model = load_protonet_conv("cpu")
-    model = model.train()
-    for param in model.parameters():
-      param.requires_grad = True
+    model = load_protonet_conv("cuda")
     n_way = 60
     n_support = 5
     n_query = 5
     optimizer = optim.Adam(model.parameters(), lr=0.001)
-    max_epoch = 5
-    epoch_size = 200
+    max_epoch = 10
+    epoch_size = 2000
     train_x = trainx
     train_y = trainy
 

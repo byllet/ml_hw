@@ -16,4 +16,9 @@
 
 Отчеты:
  - https://wandb.ai/ch2/hw4/reports/Untitled-Report--VmlldzoxMzAzOTk5MA?accessToken=9l8oxulpdvw7klr3qb0kvcccon43gskzbgkkng4vmt873ui3xwlgxv5lr7exq5xo
+
+ Визуализация:
+ ![classes](visualization/classes.png "")
+ ![symbols](visualization/symbols.png "")
+
  

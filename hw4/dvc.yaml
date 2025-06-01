@@ -1,0 +1,14 @@
+stages:
+  download:
+    cmd: python3 load_data.py
+    deps:
+    - load_data.py
+    outs:
+    - images_background
+    - images_evaluation
+  train:
+    cmd: python3 train.py
+    deps:
+    - train.py
+    outs:
+    - trained_model.pt

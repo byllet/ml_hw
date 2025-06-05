@@ -1,0 +1,18 @@
+stages:
+  train:
+    cmd:
+    - export PYTHONPATH='.'
+    - python3 src/main.py train
+
+    deps:
+    - src/main.py
+    outs: 
+    - pretrained_model/
+
+  test:
+    cmd:
+    - python3 src/main.py test
+    deps:
+    - src/main.py
+    - pretrained_model/
+

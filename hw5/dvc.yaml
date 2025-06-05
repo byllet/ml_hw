@@ -1,0 +1,21 @@
+stages:
+  train:
+    cmd: python3 src/train.py
+    deps:
+    - src/train.py
+    outs:
+    - siamese_model.pt
+  evaluate_on_test:
+    cmd: python src/evaluate.py --model_path siamese_model.pt --out_path eval_on_test/
+    deps:
+    - src/evaluate.py
+    - siamese_model.pt
+    outs:
+    - eval_on_test/
+  evaluate_on_custom_dataset:
+    cmd: python src/prepare_custom_dataset.py
+    deps:
+    - src/prepare_custom_dataset.py
+    - siamese_model.pt
+    outs:
+    - eval_on_custom_dataset/
